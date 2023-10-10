@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+    #   rg_bot:
+    #     image: z4yross/rg_bot:latest
+    #     container_name: rg_bot
+    #     build: ./rg_bot
+    #     # restart: unless-stopped
+    #     environment:
+    #       - DEBUG=*
+    #       - TOKEN=${TOKEN}
+    #       - CLIENT_ID=${CLIENT_ID}
+    #       - DEV_GUILD_ID=${DEV_GUILD_ID}
+    #       - SPOTIFY_TOKEN=${SPOTIFY_TOKEN}
+    #       - LAVALINK_PASSWORD=${LAVALINK_PASSWORD}
+    #       - LAVALINK_HOST=lavalink
+    #       - LAVALINK_PORT=2333
+    #       - VOSK_SERVER=vosk
+    #       - VOSK_PORT=2700
+    #     volumes:
+    #       - ./data:/usr/src/app/data
+    #     networks:
+    #       - lavalink
+
+    vosk:
+        image: alphacep/kaldi-es:latest
+        container_name: vosk
+        ports:
+            - 2700:2700
+        networks:
+            - lavalink
+
+    lavalink:
+        image: ghcr.io/lavalink-devs/lavalink:4.0.0-beta.4
+        container_name: lavalink
+        restart: unless-stopped
+        environment:
+            - _JAVA_OPTIONS=-Xmx6G
+            - SERVER_PORT=2333
+            - LAVALINK_SERVER_PASSWORD=rogelio123
+        volumes:
+            - ./rg_lavalink/application.yml:/opt/Lavalink/application.yml # mount application.yml from the same directory or use environment variables
+            - ./rg_lavalink/plugins/:/opt/Lavalink/plugins/ # persist plugins between restarts, make sure to set the correct permissions (user: 322, group: 322)
+            - ./rg_lavalink/logs/:/opt/Lavalink/logs/ # persist logs between restarts, make sure to set the correct permissions (user: 322, group: 322)
+        networks:
+            - lavalink
+        expose:
+            - 2333 # lavalink exposes port 2333 to connect to for other containers (this is for documentation purposes only)
+        ports:
+            - 2333:2333 # you only need this if you want to make your lavalink accessible from outside of containers
+
+networks:
+    lavalink: # create a lavalink network you can add other containers to, to give them access to Lavalink
+        name: lavalink
