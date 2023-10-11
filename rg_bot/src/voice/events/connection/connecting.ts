@@ -3,7 +3,11 @@ import debugLib from 'debug'
 const debug = debugLib('rg_bot:voice:event:connecting')
 const error = debugLib('rg_bot:voice:event:connecting:error')
 
-import { VoiceConnectionStatus, VoiceConnectionState, VoiceConnection } from '@discordjs/voice'
+import {
+	VoiceConnectionStatus,
+	VoiceConnectionState,
+	VoiceConnection,
+} from '@discordjs/voice'
 
 export const state = VoiceConnectionStatus.Connecting
 

@@ -13,7 +13,9 @@ export async function execute(interaction: CommandInteraction) {
 	const guildId = interaction.guild.id
 
 	if (!interaction.member.voice || !interaction.member.voice.channel) {
-		return await interaction.reply('You must be in a voice channel to use this command.')
+		return await interaction.reply(
+			'You must be in a voice channel to use this command.'
+		)
 	}
 
 	try {
@@ -22,7 +24,10 @@ export async function execute(interaction: CommandInteraction) {
 		if (!connection)
 			return await interaction.reply('I am not in a voice channel.')
 
-		if (connection.joinConfig.channelId !== interaction.member.voice.channel.id)
+		if (
+			connection.joinConfig.channelId !==
+			interaction.member.voice.channel.id
+		)
 			return await interaction.reply('I am not in your voice channel.')
 
 		connection.destroy()

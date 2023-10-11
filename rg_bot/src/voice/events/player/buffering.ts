@@ -3,7 +3,11 @@ import debugLib from 'debug'
 const debug = debugLib('rg_bot:voice:event:player:buffering')
 const error = debugLib('rg_bot:voice:event:player:buffering:error')
 
-import { AudioPlayerStatus, AudioPlayerState, AudioPlayer } from '@discordjs/voice'
+import {
+	AudioPlayerStatus,
+	AudioPlayerState,
+	AudioPlayer,
+} from '@discordjs/voice'
 
 export const state = AudioPlayerStatus.Buffering
 

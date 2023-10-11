@@ -14,6 +14,7 @@ import fs from 'fs'
 import { getManager, commitConnectionEvents } from './music/provider.js'
 
 import { fileURLToPath, pathToFileURL } from 'url'
+import { initManagerEvents } from './speech/interpreter.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -50,10 +51,11 @@ for (const folder of commandFolders) {
 }
 
 // @ts-ignore
-client.manager = await getManager(client);
+client.manager = await getManager(client)
 // @ts-ignore
 await commitConnectionEvents(client.manager)
 
+await initManagerEvents()
 
 const eventsPath = path.join(__dirname, 'events')
 const eventFiles = fs
@@ -65,7 +67,8 @@ for (const file of eventFiles) {
 	const fileURL = pathToFileURL(filePath).toString()
 	const event = await import(fileURL)
 
-	if (event.once) client.once(event.name, (...args) => event.execute(client, ...args))
+	if (event.once)
+		client.once(event.name, (...args) => event.execute(client, ...args))
 	else client.on(event.name, (...args) => event.execute(client, ...args))
 }
 

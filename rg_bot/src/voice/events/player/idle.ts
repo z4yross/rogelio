@@ -3,7 +3,11 @@ import debugLib from 'debug'
 const debug = debugLib('rg_bot:voice:event:player:idle')
 const error = debugLib('rg_bot:voice:event:player:idle:error')
 
-import { AudioPlayerStatus, AudioPlayerState, AudioPlayer } from '@discordjs/voice'
+import {
+	AudioPlayerStatus,
+	AudioPlayerState,
+	AudioPlayer,
+} from '@discordjs/voice'
 
 export const state = AudioPlayerStatus.Idle
 

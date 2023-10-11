@@ -88,7 +88,6 @@ export async function execute(interaction: CommandInteraction) {
 		await interaction.reply(
 			`Joined ${interactionMember.voice.channel.name}`
 		)
-
 	} catch (err) {
 		error(err)
 	}

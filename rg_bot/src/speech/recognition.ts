@@ -13,7 +13,8 @@ import * as prism from 'prism-media'
 import { AudioReceiveStream } from '@discordjs/voice'
 
 import WebSocket, { RawData } from 'ws'
-import { GuildMember } from 'discord.js'
+import { CommandInteraction } from 'discord.js'
+import { InterpretationManager } from './interpreter.js'
 
 // vosk.setLogLevel(-1)
 
@@ -25,25 +26,20 @@ export class Recognition {
 
 	constructor(
 		private rate: number,
-		private user: GuildMember
+		private interaction: CommandInteraction
 	) {
 		this.init()
 	}
 
-	handleMessage(data: RawData) {
+	async handleMessage(data: RawData) {
 		if (!data) return
 
 		const parsed = JSON.parse(data.toString())
-		if (!parsed) return
 
+		if (!parsed) return
 		if (!parsed.text) return
 
-		const result = {
-			text: parsed.text,
-			user: this.user.nickname || this.user.user.username,
-		}
-
-		debug(result)
+		InterpretationManager.interpret(parsed.text, this.interaction)
 	}
 
 	private init() {
@@ -51,7 +47,7 @@ export class Recognition {
 
 		this.ws = new WebSocket(`ws://${VOSK_SERVER}:${VOSK_PORT}`)
 
-		this.ws.on('message', (data) => this.handleMessage(data))
+		this.ws.on('message', async (data) => this.handleMessage(data))
 
 		this.ws.on('open', () => {
 			debug('Connected to server.')
