@@ -18,6 +18,18 @@ import { InterpretationManager } from './interpreter.js'
 
 // vosk.setLogLevel(-1)
 
+type RecognitionResult = {
+	conf: number
+	end: number
+	start: number
+	word: string
+}
+
+type RecognitionResponse = {
+	result: RecognitionResult[]
+	text: string
+}
+
 export class Recognition {
 	isReady = false
 	// model: vosk.Model
@@ -39,7 +51,18 @@ export class Recognition {
 		if (!parsed) return
 		if (!parsed.text) return
 
-		InterpretationManager.interpret(parsed.text, this.interaction)
+		const recognitionResponse = parsed as RecognitionResponse
+
+		// check if words has 'rogelio' in it and is not the only word
+		const isCommand = recognitionResponse.result.some(
+			(result) =>
+				result.word.toLowerCase() === 'rogelio' &&
+				recognitionResponse.result.length > 1
+		)
+
+		if (!isCommand) return
+
+		// InterpretationManager.interpret(parsed.text, this.interaction)
 	}
 
 	private init() {
