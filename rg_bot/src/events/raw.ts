@@ -9,5 +9,6 @@ export const name = 'raw'
 export const once = false
 
 export const execute = async (client: any, interaction: any) => {
+	if(!client.manager) return
 	client.manager.updateVoiceState(interaction)
 }

@@ -1,26 +1,41 @@
 version: "3.8"
 
 services:
-    #   rg_bot:
+    # rg_bot:
     #     image: z4yross/rg_bot:latest
     #     container_name: rg_bot
     #     build: ./rg_bot
     #     # restart: unless-stopped
     #     environment:
-    #       - DEBUG=*
-    #       - TOKEN=${TOKEN}
-    #       - CLIENT_ID=${CLIENT_ID}
-    #       - DEV_GUILD_ID=${DEV_GUILD_ID}
-    #       - SPOTIFY_TOKEN=${SPOTIFY_TOKEN}
-    #       - LAVALINK_PASSWORD=${LAVALINK_PASSWORD}
-    #       - LAVALINK_HOST=lavalink
-    #       - LAVALINK_PORT=2333
-    #       - VOSK_SERVER=vosk
-    #       - VOSK_PORT=2700
+    #         - DEBUG=*
+    #         - TOKEN=${TOKEN}
+    #         - CLIENT_ID=${CLIENT_ID}
+    #         - DEV_GUILD_ID=${DEV_GUILD_ID}
+    #         - SPOTIFY_TOKEN=${SPOTIFY_TOKEN}
+    #         - LAVALINK_PASSWORD=${LAVALINK_PASSWORD}
+    #         - LAVALINK_HOST=lavalink
+    #         - LAVALINK_PORT=2333
+    #         - VOSK_SERVER=vosk
+    #         - VOSK_PORT=2700
+    #         - INTERPREATION_HOST=rg_interpretation
+    #         - INTERPREATION_PORT=5000
     #     volumes:
-    #       - ./data:/usr/src/app/data
+    #         - ./data:/usr/src/app/data
     #     networks:
-    #       - lavalink
+    #         - lavalink
+
+    rg_interpretation:
+        image: z4yross/rg_interpretation:latest
+        container_name: rg_interpretation
+        build: ./rg_interpretation
+        # restart: unless-stopped
+        environment:
+            - PORT=5000
+            - OPENAI_API_KEY=${OPENAI_API_KEY}
+        ports:
+            - 5000:5000
+        networks:
+            - lavalink
 
     vosk:
         image: alphacep/kaldi-es:latest
@@ -48,6 +63,16 @@ services:
             - 2333 # lavalink exposes port 2333 to connect to for other containers (this is for documentation purposes only)
         ports:
             - 2333:2333 # you only need this if you want to make your lavalink accessible from outside of containers
+
+    coqui-tts:
+        image: ghcr.io/coqui-ai/tts-cpu
+        entrypoint: /bin/bash
+        # command: "tail -f /dev/null"
+        container_name: coqui
+        ports:
+            - 5002:5002
+        # volumes:
+        #   - ./rg_mycroft:/home/mimic3/.local/share/mycroft/mimic3
 
 networks:
     lavalink: # create a lavalink network you can add other containers to, to give them access to Lavalink

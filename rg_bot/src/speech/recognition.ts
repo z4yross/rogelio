@@ -30,10 +30,12 @@ type RecognitionResponse = {
 	text: string
 }
 
+const name = 'rogelio'
+
+const activationCommands = [`${name}`]
+
 export class Recognition {
 	isReady = false
-	// model: vosk.Model
-
 	ws: WebSocket
 
 	constructor(
@@ -53,16 +55,15 @@ export class Recognition {
 
 		const recognitionResponse = parsed as RecognitionResponse
 
-		// check if words has 'rogelio' in it and is not the only word
-		const isCommand = recognitionResponse.result.some(
-			(result) =>
-				result.word.toLowerCase() === 'rogelio' &&
-				recognitionResponse.result.length > 1
+		const isCommand = activationCommands.some((command) =>
+			recognitionResponse.text.toLowerCase().includes(command)
 		)
 
 		if (!isCommand) return
 
-		// InterpretationManager.interpret(parsed.text, this.interaction)
+		debug('Recognized command:', recognitionResponse.text)
+
+		InterpretationManager.interpret(parsed.text, this.interaction)
 	}
 
 	private init() {

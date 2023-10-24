@@ -2,24 +2,33 @@ import debugLib from 'debug'
 const debug = debugLib('rg_bot:commands:stop')
 const error = debugLib('rg_bot:commands:stop:error')
 
-import { SlashCommandBuilder, CommandInteraction } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	CommandInteraction,
+	GuildMember,
+} from 'discord.js'
+import { RogelioClient } from '../../client/RogelioClient.js'
 
 export const data = new SlashCommandBuilder()
 	.setName('stop')
 	.setDescription('Skips the current song.')
 
 export async function execute(interaction: CommandInteraction) {
-	// @ts-ignore
-	if (!interaction.member.voice || !interaction.member.voice.channel) {
+	const client = interaction.client as RogelioClient
+	const musciClient = client.musicClient
+	const manager = musciClient.manager
+	const member = interaction.member as GuildMember
+
+	if (!member.voice || !member.voice.channel) {
 		return interaction.reply({
 			content: 'You must be in a voice channel to use this command.',
 			ephemeral: true,
 		})
 	}
 
-	const player = interaction.client.manager.get(interaction.guild.id)
+	const player = manager.get(interaction.guild.id)
 
-	if (!player) {
+	if (player === undefined) {
 		return interaction.reply({
 			content: 'I am not in a voice channel.',
 			ephemeral: true,
@@ -33,14 +42,6 @@ export async function execute(interaction: CommandInteraction) {
 		})
 	}
 
-	try {
-		player.stop()
-	} catch (err) {
-		error(err)
-		return interaction.reply(
-			`there was an error while stopping: ${err.message}`
-		)
-	}
-
+	player.destroy()
 	await interaction.reply('Stopped.')
 }

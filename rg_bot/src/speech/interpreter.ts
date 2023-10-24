@@ -15,7 +15,7 @@ import { fileURLToPath, pathToFileURL } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const INTERPRETER_SERVER = process.env.INTERPRETER_SERVER || 'localhost'
+const INTERPRETER_SERVER = process.env.INTERPREATION_HOST || 'localhost'
 const INTERPRETER_PORT = process.env.INTERPRETER_PORT || 5000
 const INTERPRETER_URL = `http://${INTERPRETER_SERVER}:${INTERPRETER_PORT}`
 
@@ -28,7 +28,11 @@ type Interpretation = {
 
 export enum InterpretationEvent {
 	UNKNOWN = 'unknown',
-	MUSIC = 'music',
+	PLAY = 'play',
+	PAUSE = 'pause',
+	RESUME = 'resume',
+	STOP = 'stop',
+	NEXT = 'next'
 }
 
 export type InterpretationEventPayload = {
@@ -48,16 +52,25 @@ export class Interpreter extends EventEmitter {
 		text: string,
 		interaction: CommandInteraction
 	): Promise<Interpretation> {
-		const user = interaction.member as GuildMember
+		const axiosOptions = {
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			method: 'POST',
+			url: `${INTERPRETER_URL}/interpretation`,
+			data: {
+				text,
+			},
+		}
 
-		const response = await axios.post(INTERPRETER_URL, {
-			text,
-			user: user.nickname || user.user.username,
-		})
-
-		debug(response.data)
-
-		return response.data
+		try {
+			const response = await axios(axiosOptions)
+			debug(response.data)
+			return response.data
+		} catch (err) {
+			error(err)
+			return
+		}
 	}
 
 	async interpret(text: string, interaction: CommandInteraction) {

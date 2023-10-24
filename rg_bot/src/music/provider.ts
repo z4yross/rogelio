@@ -2,7 +2,7 @@ import debugLib from 'debug'
 const debug = debugLib('rg_bot:music:provider')
 const error = debugLib('rg_bot:music:provider:error')
 
-import { Manager, NodeOptions } from 'magmastream'
+import { Manager, ManagerOptions, NodeOptions } from 'magmastream'
 import path from 'path'
 import fs from 'fs'
 
@@ -27,13 +27,17 @@ const nodes: NodeOptions[] = [
 export const getManager = async (client: any) => {
 	debug(`Loaded ${nodes.length} nodes.`)
 	debug(`Connecting to nodes... with config: ${JSON.stringify(nodes)}`)
-	const manager = new Manager({
+
+	const managerOptions: ManagerOptions = {
 		nodes,
 		send: (id, payload) => {
 			const guild = client.guilds.cache.get(id)
 			if (guild) guild.shard.send(payload)
 		},
-	})
+		autoPlay: true,
+	}
+
+	const manager = new Manager(managerOptions)
 
 	return manager
 }
