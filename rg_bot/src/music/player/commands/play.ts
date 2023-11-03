@@ -22,7 +22,6 @@ export const execute = async (
 
 	try {
 		searchResult = await playerManager.search(args.search)
-		debug(searchResult)
 	} catch (err) {
 		error(err)
 		throw err
