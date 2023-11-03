@@ -2,7 +2,13 @@ import debugLib from 'debug'
 const debug = debugLib('rg_bot:commands:play')
 const error = debugLib('rg_bot:commands:play:error')
 
-import { SlashCommandBuilder, CommandInteraction } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	CommandInteraction,
+	GuildMember,
+} from 'discord.js'
+import { RogelioClient } from '../../client/RogelioClient.js'
+import { SearchResult } from 'magmastream'
 
 export const data = new SlashCommandBuilder()
 	.setName('play')
@@ -15,8 +21,12 @@ export const data = new SlashCommandBuilder()
 	)
 
 export async function execute(interaction: CommandInteraction) {
-	// @ts-ignore
-	if (!interaction.member.voice || !interaction.member.voice.channel) {
+	const client = interaction.client as RogelioClient
+	const musciClient = client.musicClient
+	const manager = musciClient.manager
+	const member = interaction.member as GuildMember
+
+	if (!member.voice || !member.voice.channel) {
 		await interaction.reply({
 			content: 'You must be in a voice channel to use this command.',
 			ephemeral: true,
@@ -24,15 +34,14 @@ export async function execute(interaction: CommandInteraction) {
 		return
 	}
 
-	// @ts-ignore
-	const search = interaction.options.getString('song')
-	let res
+	const search = interaction.options.get('song').value as string
+
+	let res: SearchResult
 
 	try {
-		// @ts-ignore
-		res = await interaction.client.manager.search(search)
-		// Check the load type as this command is not that advanced for basics
-		if (res.loadType === 'empty') throw res.exception
+		res = await manager.search(search)
+
+		if (res.loadType === 'empty') throw { message: 'No results found.' }
 		if (res.loadType === 'playlist') {
 			throw { message: 'Playlists are not supported with this command.' }
 		}
@@ -49,27 +58,28 @@ export async function execute(interaction: CommandInteraction) {
 		return
 	}
 
-	// @ts-ignore
-	const player = interaction.client.manager.create({
-		guild: interaction.guild.id,
-		// @ts-ignore
-		voiceChannel: interaction.member.voice.channel.id,
-		textChannel: interaction.channel.id,
-		selfDeafen: false,
-		selfMute: false,
-		volume: 100,
-	})
+	let player = manager.get(interaction.guildId)
 
-	player.connect()
+	if (player === undefined) {
+		player = manager.create({
+			guild: interaction.guild.id,
+			voiceChannel: member.voice.channel.id,
+			textChannel: interaction.channel.id,
+			selfDeafen: false,
+			selfMute: false,
+			volume: 100,
+		})
+
+		player.connect()
+	}
+
 	player.queue.add(res.tracks[0])
-	// player.play()
 
 	if (!player.playing && !player.paused && !player.queue.size) {
 		player.play()
 		await interaction.reply(`playing ${res.tracks[0].title}.`)
 		return
 	}
+	
 	await interaction.reply(`enqueuing ${res.tracks[0].title}.`)
 }
-
-// interactionOrMessage: CommandInteraction | Message, arguments?: string

@@ -24,7 +24,9 @@ export const commitPlayerEvents = async (player: AudioPlayer) => {
 		const event = await import(fileURL)
 
 		if (event.once)
-			player.once(event.state, (...args) => event.execute(...args, player))
+			player.once(event.state, (...args) =>
+				event.execute(...args, player)
+			)
 		else player.on(event.state, (...args) => event.execute(...args, player))
 	}
 }
@@ -42,7 +44,12 @@ export const commitConnectionEvents = async (connection: VoiceConnection) => {
 		const event = await import(fileURL)
 
 		if (event.once)
-			connection.once(event.state, (...args) => event.execute(...args, connection))
-		else connection.on(event.state, (...args) => event.execute(...args, connection))
+			connection.once(event.state, (...args) =>
+				event.execute(...args, connection)
+			)
+		else
+			connection.on(event.state, (...args) =>
+				event.execute(...args, connection)
+			)
 	}
 }

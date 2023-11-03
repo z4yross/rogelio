@@ -13,37 +13,57 @@ import * as prism from 'prism-media'
 import { AudioReceiveStream } from '@discordjs/voice'
 
 import WebSocket, { RawData } from 'ws'
-import { GuildMember } from 'discord.js'
+import { CommandInteraction } from 'discord.js'
+import { InterpretationManager } from './interpreter.js'
 
 // vosk.setLogLevel(-1)
 
+type RecognitionResult = {
+	conf: number
+	end: number
+	start: number
+	word: string
+}
+
+type RecognitionResponse = {
+	result: RecognitionResult[]
+	text: string
+}
+
+const name = 'rogelio'
+
+const activationCommands = [`${name}`]
+
 export class Recognition {
 	isReady = false
-	// model: vosk.Model
-
 	ws: WebSocket
 
 	constructor(
 		private rate: number,
-		private user: GuildMember
+		private interaction: CommandInteraction
 	) {
 		this.init()
 	}
 
-	handleMessage(data: RawData) {
+	async handleMessage(data: RawData) {
 		if (!data) return
 
 		const parsed = JSON.parse(data.toString())
-		if (!parsed) return
 
+		if (!parsed) return
 		if (!parsed.text) return
 
-		const result = {
-			text: parsed.text,
-			user: this.user.nickname || this.user.user.username,
-		}
+		const recognitionResponse = parsed as RecognitionResponse
 
-		debug(result)
+		const isCommand = activationCommands.some((command) =>
+			recognitionResponse.text.toLowerCase().includes(command)
+		)
+
+		if (!isCommand) return
+
+		debug('Recognized command:', recognitionResponse.text)
+
+		InterpretationManager.interpret(parsed.text, this.interaction)
 	}
 
 	private init() {
@@ -51,7 +71,7 @@ export class Recognition {
 
 		this.ws = new WebSocket(`ws://${VOSK_SERVER}:${VOSK_PORT}`)
 
-		this.ws.on('message', (data) => this.handleMessage(data))
+		this.ws.on('message', async (data) => this.handleMessage(data))
 
 		this.ws.on('open', () => {
 			debug('Connected to server.')

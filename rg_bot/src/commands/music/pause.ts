@@ -2,26 +2,33 @@ import debugLib from 'debug'
 const debug = debugLib('rg_bot:commands:pause')
 const error = debugLib('rg_bot:commands:pause:error')
 
-import { SlashCommandBuilder, CommandInteraction } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	CommandInteraction,
+	GuildMember,
+} from 'discord.js'
+import { RogelioClient } from '../../client/RogelioClient.js'
 
 export const data = new SlashCommandBuilder()
 	.setName('pause')
 	.setDescription('Pauses the current song.')
 
 export async function execute(interaction: CommandInteraction) {
-	// @ts-ignore
-	if (!interaction.member.voice || !interaction.member.voice.channel) {
+	const member = interaction.member as GuildMember
+	const client = interaction.client as RogelioClient
+
+	if (!member.voice || !member.voice.channel) {
 		return interaction.reply({
 			content: 'You must be in a voice channel to use this command.',
 			ephemeral: true,
 		})
 	}
 
-	const player = interaction.client.manager.get(interaction.guild.id)
+	const player = client.musicClient.manager.get(interaction.guild.id)
 
-	if (!player) {
+	if (player === undefined) {
 		return interaction.reply({
-			content: 'I am not in a voice channel.',
+			content: 'there is no player for this guild.',
 			ephemeral: true,
 		})
 	}
@@ -33,14 +40,6 @@ export async function execute(interaction: CommandInteraction) {
 		})
 	}
 
-	try {
-		player.pause()
-	} catch (err) {
-		error(err)
-		return interaction.reply(
-			`there was an error while pausing: ${err.message}`
-		)
-	}
-
-	await interaction.reply('Paused.')
+	player.pause(true)
+	await interaction.reply(`Paused ${player.queue.current.title}.`)
 }

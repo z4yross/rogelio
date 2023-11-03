@@ -13,6 +13,7 @@ import {
 	VoiceReceiver,
 	createDefaultAudioReceiveStreamOptions,
 	EndBehaviorType,
+	getVoiceConnection,
 } from '@discordjs/voice'
 
 import * as prism from 'prism-media'
@@ -31,7 +32,6 @@ const setupConnection = async (
 	const receiver = connection.receiver as VoiceReceiver
 	const interactionMember = interaction.member as GuildMember
 
-	// get all users that are in the voice channel
 	const users = interactionMember.voice.channel.members
 
 	users.forEach((user) => {
@@ -43,7 +43,6 @@ const setupConnection = async (
 			behavior: EndBehaviorType.Manual,
 		}
 
-		// @ts-ignore
 		const receiverStream = receiver.subscribe(user.id, options)
 
 		const opusDecoder = new prism.opus.Decoder({
@@ -54,7 +53,7 @@ const setupConnection = async (
 
 		debug(`Subscribed to ${user.user.username}`)
 
-		const recognizer = new Recognition(16000, user)
+		const recognizer = new Recognition(16000, interaction)
 		recognizer.recognize(receiverStream, opusDecoder)
 	})
 }
@@ -73,8 +72,7 @@ export async function execute(interaction: CommandInteraction) {
 	}
 
 	const connectionParams = {
-		// @ts-ignore
-		channelId: interaction.member.voice.channel.id,
+		channelId: interactionMember.voice.channel.id,
 		guildId: interaction.guild.id,
 		adapterCreator: interaction.guild.voiceAdapterCreator,
 		selfDeaf: false,
@@ -83,15 +81,13 @@ export async function execute(interaction: CommandInteraction) {
 
 	try {
 		const connection = joinVoiceChannel(connectionParams)
+
 		await setupConnection(interaction, connection)
 
 		await interaction.reply(
 			`Joined ${interactionMember.voice.channel.name}`
 		)
-
 	} catch (err) {
 		error(err)
 	}
 }
-
-// interactionOrMessage: CommandInteraction | Message, arguments?: string

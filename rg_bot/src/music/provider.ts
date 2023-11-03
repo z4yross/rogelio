@@ -2,11 +2,12 @@ import debugLib from 'debug'
 const debug = debugLib('rg_bot:music:provider')
 const error = debugLib('rg_bot:music:provider:error')
 
-import { Manager, NodeOptions } from 'magmastream'
+import { Manager, ManagerOptions, NodeOptions } from 'magmastream'
 import path from 'path'
 import fs from 'fs'
 
 import { fileURLToPath, pathToFileURL } from 'url'
+import { Command, RogelioPlayerManager } from './player/player.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -27,18 +28,22 @@ const nodes: NodeOptions[] = [
 export const getManager = async (client: any) => {
 	debug(`Loaded ${nodes.length} nodes.`)
 	debug(`Connecting to nodes... with config: ${JSON.stringify(nodes)}`)
-	const manager = new Manager({
+
+	const managerOptions: ManagerOptions = {
 		nodes,
 		send: (id, payload) => {
 			const guild = client.guilds.cache.get(id)
 			if (guild) guild.shard.send(payload)
 		},
-	})
+		autoPlay: true,
+	}
+
+	const manager = new RogelioPlayerManager(managerOptions)
 
 	return manager
 }
 
-export const commitConnectionEvents = async (manager: Manager) => {
+export const commitManagerEvents = async (manager: RogelioPlayerManager) => {
 	const foldersPath = path.join(__dirname, './events')
 
 	const eventFiles = fs
@@ -50,13 +55,22 @@ export const commitConnectionEvents = async (manager: Manager) => {
 		const fileURL = pathToFileURL(filePath).toString()
 		const event = await import(fileURL)
 
-		if (event.once)
-			manager.once(event.state, (...args) =>
-				event.execute(...args, manager)
-			)
-		else
-			manager.on(event.state, (...args) =>
-				event.execute(...args, manager)
-			)
+		manager.addEvent(event)
+	}
+}
+
+export const commitManagerCommands = async (manager: RogelioPlayerManager) => {
+	const foldersPath = path.join(__dirname, './player/commands')
+
+	const commandFiles = fs
+		.readdirSync(foldersPath)
+		.filter((file) => file.endsWith('.ts'))
+
+	for (const file of commandFiles) {
+		const filePath = path.join(foldersPath, file)
+		const fileURL = pathToFileURL(filePath).toString()
+		const commandFile = await import(fileURL) as Command
+
+		manager.addCommand(commandFile)
 	}
 }

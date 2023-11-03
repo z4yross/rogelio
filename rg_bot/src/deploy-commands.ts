@@ -50,7 +50,9 @@ const deployCommands = async (
 	guildId?: string
 ) => {
 	try {
-		debug(`Started refreshing ${commands.length} application (/) commands. (guild: ${guildId}))`)
+		debug(
+			`Started refreshing ${commands.length} application (/) commands. (guild: ${guildId}))`
+		)
 
 		let url = Routes.applicationCommands(clientId)
 
