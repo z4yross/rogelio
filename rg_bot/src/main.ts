@@ -13,16 +13,21 @@ import { GatewayIntentBits } from 'discord.js'
 import path from 'path'
 import fs from 'fs'
 
-import { getManager, commitConnectionEvents } from './music/provider.js'
+import { getManager, commitManagerEvents, commitManagerCommands } from './music/provider.js'
 
 import { fileURLToPath, pathToFileURL } from 'url'
 import { initManagerEvents } from './speech/interpreter.js'
-import { ClientEvent, RogelioClient } from './client/RogelioClient.js'
+import { ClientEvent, RogelioClient } from './client/rogelioclient.js'
+import { RogelioPlayerManager } from './music/player/player.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const client = new RogelioClient({
+	intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
+})
+
+const musicClient = client.addMusicClient({
 	intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
 })
 
@@ -55,7 +60,9 @@ for (const folder of commandFolders) {
 const manager = await getManager(client.musicClient)
 client.addManager(manager)
 
-await commitConnectionEvents(client.musicClient.manager)
+await commitManagerEvents(client.musicClient.manager as RogelioPlayerManager)
+await commitManagerCommands(client.musicClient.manager as RogelioPlayerManager)
+
 await initManagerEvents()
 
 const eventsPath = path.join(__dirname, 'events')

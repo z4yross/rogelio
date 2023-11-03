@@ -44,6 +44,7 @@ export class RogelioClient extends Client {
 	}
 
 	addCommand(command: ClientCommand): RogelioClient {
+		if (!this.commands) this.commands = new Collection()
 		this.commands.set(command.data.name, command)
 		return this
 	}

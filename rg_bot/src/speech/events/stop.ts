@@ -8,7 +8,8 @@ import {
 	InterpretationEventPayload,
 } from '../interpreter.js'
 import { BaseGuildTextChannel, GuildMember, TextChannel } from 'discord.js'
-import { RogelioClient } from '../../client/RogelioClient.js'
+import { RogelioClient } from '../../client/rogelioclient.js'
+import { RogelioPlayerManager } from '../../music/player/player.js'
 
 export const eventName = InterpretationEvent.STOP
 
@@ -17,7 +18,8 @@ export const once = false
 export const handler = async (payload: InterpretationEventPayload) => {
 	const client = payload.interaction.client as RogelioClient
 	const musciClient = client.musicClient
-	const manager = musciClient.manager
+	const manager = musciClient.manager as RogelioPlayerManager
+
 	const channelId = payload.interaction.channelId
 	const textChannel = client.channels.cache.get(
 		channelId
@@ -25,14 +27,15 @@ export const handler = async (payload: InterpretationEventPayload) => {
 
 	await textChannel.send(`${payload.assistant}`)
 
-	const player = manager.get(payload.interaction.guildId)
+	try {
+		const response = await manager.executeCommand(
+			'stop',
+			payload.interaction,
+			{}
+		)
 
-	if (!player.playing) {
-		await textChannel.send('the player is not playing.')
-		return
+		await textChannel.send(response)
+	} catch (err) {
+		textChannel.send(`There was an error while resuming: ${err.message}`)
 	}
-
-	player.destroy()
-	await textChannel.send(`stopping ${player.queue.current.title}.`)
-	return
 }

@@ -7,6 +7,7 @@ import path from 'path'
 import fs from 'fs'
 
 import { fileURLToPath, pathToFileURL } from 'url'
+import { Command, RogelioPlayerManager } from './player/player.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -37,12 +38,12 @@ export const getManager = async (client: any) => {
 		autoPlay: true,
 	}
 
-	const manager = new Manager(managerOptions)
+	const manager = new RogelioPlayerManager(managerOptions)
 
 	return manager
 }
 
-export const commitConnectionEvents = async (manager: Manager) => {
+export const commitManagerEvents = async (manager: RogelioPlayerManager) => {
 	const foldersPath = path.join(__dirname, './events')
 
 	const eventFiles = fs
@@ -54,13 +55,22 @@ export const commitConnectionEvents = async (manager: Manager) => {
 		const fileURL = pathToFileURL(filePath).toString()
 		const event = await import(fileURL)
 
-		if (event.once)
-			manager.once(event.state, (...args) =>
-				event.execute(...args, manager)
-			)
-		else
-			manager.on(event.state, (...args) =>
-				event.execute(...args, manager)
-			)
+		manager.addEvent(event)
+	}
+}
+
+export const commitManagerCommands = async (manager: RogelioPlayerManager) => {
+	const foldersPath = path.join(__dirname, './player/commands')
+
+	const commandFiles = fs
+		.readdirSync(foldersPath)
+		.filter((file) => file.endsWith('.ts'))
+
+	for (const file of commandFiles) {
+		const filePath = path.join(foldersPath, file)
+		const fileURL = pathToFileURL(filePath).toString()
+		const commandFile = await import(fileURL) as Command
+
+		manager.addCommand(commandFile)
 	}
 }

@@ -8,6 +8,7 @@ import {
 	GuildMember,
 } from 'discord.js'
 import { RogelioClient } from '../../client/RogelioClient.js'
+import { SearchResult } from 'magmastream'
 
 export const data = new SlashCommandBuilder()
 	.setName('play')
@@ -35,12 +36,12 @@ export async function execute(interaction: CommandInteraction) {
 
 	const search = interaction.options.get('song').value as string
 
-	let res
+	let res: SearchResult
 
 	try {
 		res = await manager.search(search)
 
-		if (res.loadType === 'empty') throw res.exception
+		if (res.loadType === 'empty') throw { message: 'No results found.' }
 		if (res.loadType === 'playlist') {
 			throw { message: 'Playlists are not supported with this command.' }
 		}
