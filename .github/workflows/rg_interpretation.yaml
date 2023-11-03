@@ -1,4 +1,4 @@
-name: RG_BOT Docker Image build and push to Docker Hub
+name: RG_INTERPRETATION Docker Image build and push to Docker Hub
 
 on:
   push:
