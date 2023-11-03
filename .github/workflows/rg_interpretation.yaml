@@ -62,7 +62,7 @@ jobs:
   push-rg-interpretation:
     runs-on: ubuntu-latest
     needs:
-      - build-rg-bot
+      - build-rg-interpretation
     steps:
       - name: Download digests
         uses: actions/download-artifact@v3
