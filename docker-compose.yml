@@ -1,28 +1,31 @@
 version: "3.8"
 
 services:
-    # rg_bot:
-    #     image: z4yross/rg_bot:latest
-    #     container_name: rg_bot
-    #     build: ./rg_bot
-    #     # restart: unless-stopped
-    #     environment:
-    #         - DEBUG=*
-    #         - TOKEN=${TOKEN}
-    #         - CLIENT_ID=${CLIENT_ID}
-    #         - DEV_GUILD_ID=${DEV_GUILD_ID}
-    #         - SPOTIFY_TOKEN=${SPOTIFY_TOKEN}
-    #         - LAVALINK_PASSWORD=${LAVALINK_PASSWORD}
-    #         - LAVALINK_HOST=lavalink
-    #         - LAVALINK_PORT=2333
-    #         - VOSK_SERVER=vosk
-    #         - VOSK_PORT=2700
-    #         - INTERPREATION_HOST=rg_interpretation
-    #         - INTERPREATION_PORT=5000
-    #     volumes:
-    #         - ./data:/usr/src/app/data
-    #     networks:
-    #         - lavalink
+    rg_bot:
+        image: z4yross/rg_bot:latest
+        container_name: rg_bot
+        build: ./rg_bot
+        # restart: unless-stopped
+        environment:
+            - DEBUG=*
+            - TOKEN=${TOKEN}
+            - SECOND_TOKEN=${SECOND_TOKEN}
+            - CLIENT_ID=${CLIENT_ID}
+            - SECOND_CLIENT_ID=${SECOND_CLIENT_ID}
+            - DEV_GUILD_ID=${DEV_GUILD_ID}
+            - SPOTIFY_TOKEN=${SPOTIFY_TOKEN}
+            - LAVALINK_PASSWORD=${LAVALINK_PASSWORD}
+            - LAVALINK_HOST=lavalink
+            - LAVALINK_PORT=2333
+            - VOSK_SERVER=vosk
+            - VOSK_PORT=2700
+            - MODEL_NAME=vosk-model-small-es-0.42
+            - INTERPREATION_HOST=rg_interpretation
+            - INTERPREATION_PORT=5000
+        volumes:
+            - ./data:/usr/src/app/data
+        networks:
+            - lavalink
 
     rg_interpretation:
         image: z4yross/rg_interpretation:latest
