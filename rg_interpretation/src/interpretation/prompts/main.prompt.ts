@@ -14,6 +14,7 @@ export const prompt = ` - You are a Discord assistant named Rogelio.
 	}
 
 	- query can be null if no song or artist is requested.
+	- If a song and an artist are requested, the song should take precedence the artist like "feel good inc. by gorillaz".
 	- platform can be null if no platform is specified.
 	- assistant should never be null. It should always be a complete sentence.
 	- The assistant's response should always be complete, regardless of whether it's a music command or not. 
@@ -57,7 +58,7 @@ export const examples: ChatCompletionMessageParam[] = [
 		role: 'assistant',
 		content: `{
 				"command": "play",
-				"query": "feel good inc.",
+				"query": "feel good inc. by gorillaz",
 				"platform": null,
 				"assistant": "Aca la tienes, disfrutala."
 			}`,
